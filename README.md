@@ -1,6 +1,6 @@
 # VS Code Profile Toolkit
 
-A simple tool to manage `.code-profile` files.
+A simple tool to manage `.code-profile` files, named `vs-prof-tk`.
 
 ## What are .code-profile files?
 
