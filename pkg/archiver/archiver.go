@@ -19,48 +19,58 @@ func (p *ProfilePackArchiver) ArchiveTo(pack *models.ProfilePack, destination st
 	}
 
 	// Settings
-	settingsData := map[string]any{}
-	settingsData["settings"] = pack.Settings.Text
-	settingsStr, err := json.Marshal(settingsData)
-	if err != nil {
-		panic(err)
+	if pack.Settings != nil {
+		settingsData := map[string]any{}
+		settingsData["settings"] = pack.Settings.Text
+		settingsStr, err := json.Marshal(settingsData)
+		if err != nil {
+			panic(err)
+		}
+		outputData["settings"] = string(settingsStr)
 	}
-	outputData["settings"] = string(settingsStr)
 
 	// Keybindings
-	keybindingsData := map[string]any{}
-	keybindingsData["keybindings"] = pack.Keybindings.Text
-	keybindingsStr, err := json.Marshal(keybindingsData)
-	if err != nil {
-		panic(err)
+	if pack.Keybindings != nil {
+		keybindingsData := map[string]any{}
+		keybindingsData["keybindings"] = pack.Keybindings.Text
+		keybindingsStr, err := json.Marshal(keybindingsData)
+		if err != nil {
+			panic(err)
+		}
+		outputData["keybindings"] = string(keybindingsStr)
 	}
-	outputData["keybindings"] = string(keybindingsStr)
 
 	// Snippets
-	snippetsData := map[string]map[string]any{}
-	snippetsData["snippets"] = map[string]any{}
-	for key, value := range pack.Snippets {
-		snippetsData["snippets"][key] = value.Text
+	if pack.Snippets != nil {
+		snippetsData := map[string]map[string]any{}
+		snippetsData["snippets"] = map[string]any{}
+		for key, value := range *pack.Snippets {
+			snippetsData["snippets"][key] = value.Text
+		}
+		snippetsStr, err := json.Marshal(snippetsData)
+		if err != nil {
+			panic(err)
+		}
+		outputData["snippets"] = string(snippetsStr)
 	}
-	snippetsStr, err := json.Marshal(snippetsData)
-	if err != nil {
-		panic(err)
-	}
-	outputData["snippets"] = string(snippetsStr)
 
 	// Extensions
-	extensionsStr, err := json.Marshal(pack.Extensions)
-	if err != nil {
-		panic(err)
+	if pack.Extensions != nil {
+		extensionsStr, err := json.Marshal(pack.Extensions)
+		if err != nil {
+			panic(err)
+		}
+		outputData["extensions"] = string(extensionsStr)
 	}
-	outputData["extensions"] = string(extensionsStr)
 
 	// Global state
-	globalStateStr, err := json.Marshal(pack.GlobalState)
-	if err != nil {
-		panic(err)
+	if pack.GlobalState != nil {
+		globalStateStr, err := json.Marshal(pack.GlobalState)
+		if err != nil {
+			panic(err)
+		}
+		outputData["globalState"] = string(globalStateStr)
 	}
-	outputData["globalState"] = string(globalStateStr)
 
 	// Export everything
 	outputStr, err := json.Marshal(outputData)

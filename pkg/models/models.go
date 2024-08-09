@@ -1,13 +1,13 @@
 package models
 
 type ProfilePack struct {
-	Name        string                         `json:"name"`
-	Icon        *string                        `json:"icon"`
-	Settings    ProfilePackSettings            `json:"settings"`
-	Keybindings ProfilePackKeybindings         `json:"keybindings"`
-	Snippets    map[string]ProfilePackSnippets `json:"snippets"`
-	Extensions  []ProfilePackExtension         `json:"extensions"`
-	GlobalState ProfilePackGlobalState         `json:"globalState"`
+	Name        string                          `json:"name"`
+	Icon        *string                         `json:"icon"`
+	Settings    *ProfilePackSettings            `json:"settings"`
+	Keybindings *ProfilePackKeybindings         `json:"keybindings"`
+	Snippets    *map[string]ProfilePackSnippets `json:"snippets"`
+	Extensions  *[]ProfilePackExtension         `json:"extensions"`
+	GlobalState *ProfilePackGlobalState         `json:"globalState"`
 }
 
 type ProfilePackSettings struct {

@@ -50,6 +50,10 @@ func (p *ProfilePackExtractor) writeProfileFile(pack *models.ProfilePack, destin
 }
 
 func (p *ProfilePackExtractor) writeSettingsFile(pack *models.ProfilePack, destination string) {
+	if pack.Settings == nil {
+		return
+	}
+
 	profilePath := filepath.Join(destination, pack.Name)
 
 	err := os.WriteFile(filepath.Join(profilePath, "settings.jsonc"), []byte(pack.Settings.Text), 0644)
@@ -59,6 +63,10 @@ func (p *ProfilePackExtractor) writeSettingsFile(pack *models.ProfilePack, desti
 }
 
 func (p *ProfilePackExtractor) writeKeybindingsFile(pack *models.ProfilePack, destination string) {
+	if pack.Keybindings == nil {
+		return
+	}
+
 	profilePath := filepath.Join(destination, pack.Name)
 
 	err := os.WriteFile(filepath.Join(profilePath, "keybindings.jsonc"), []byte(pack.Keybindings.Text), 0644)
@@ -68,6 +76,10 @@ func (p *ProfilePackExtractor) writeKeybindingsFile(pack *models.ProfilePack, de
 }
 
 func (p *ProfilePackExtractor) writeSnippetsDirectory(pack *models.ProfilePack, destination string) {
+	if pack.Snippets == nil {
+		return
+	}
+
 	profilePath := filepath.Join(destination, pack.Name)
 	var err error
 
@@ -77,7 +89,7 @@ func (p *ProfilePackExtractor) writeSnippetsDirectory(pack *models.ProfilePack, 
 		panic(err)
 	}
 
-	for lang, snippet := range pack.Snippets {
+	for lang, snippet := range *pack.Snippets {
 		langJsonc := lang + "c"
 		err = os.WriteFile(filepath.Join(snippetsPath, langJsonc), []byte(snippet.Text), 0644)
 		if err != nil {
@@ -87,6 +99,10 @@ func (p *ProfilePackExtractor) writeSnippetsDirectory(pack *models.ProfilePack, 
 }
 
 func (p *ProfilePackExtractor) writeExtensionsFile(pack *models.ProfilePack, destination string) {
+	if pack.Extensions == nil {
+		return
+	}
+
 	profilePath := filepath.Join(destination, pack.Name)
 
 	extensionsDataSerialized, err := json.MarshalIndent(pack.Extensions, "", "\t")
@@ -101,6 +117,10 @@ func (p *ProfilePackExtractor) writeExtensionsFile(pack *models.ProfilePack, des
 }
 
 func (p *ProfilePackExtractor) writeGlobalStateFile(pack *models.ProfilePack, destination string) {
+	if pack.GlobalState == nil {
+		return
+	}
+
 	profilePath := filepath.Join(destination, pack.Name)
 
 	serialized, err := json.MarshalIndent(pack.GlobalState, "", "\t")

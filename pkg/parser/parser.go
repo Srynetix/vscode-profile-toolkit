@@ -30,18 +30,53 @@ func (p *ProfilePackParser) ParseBytes(bytes []byte) *models.ProfilePack {
 
 	var icon *string
 	if mapData["icon"] != nil {
-		var stringIcon = mapData["icon"].(string)
+		stringIcon := mapData["icon"].(string)
 		icon = &stringIcon
+	}
+
+	var settingsData *models.ProfilePackSettings
+	if mapData["settings"] != nil {
+		settingsStr := mapData["settings"].(string)
+		settingsObj := p.parseSettings(settingsStr)
+		settingsData = &settingsObj
+	}
+
+	var keybindingsData *models.ProfilePackKeybindings
+	if mapData["keybindings"] != nil {
+		keybindingsStr := mapData["keybindings"].(string)
+		keybindingsObj := p.parseKeybindings(keybindingsStr)
+		keybindingsData = &keybindingsObj
+	}
+
+	var snippetsData *map[string]models.ProfilePackSnippets
+	if mapData["snippets"] != nil {
+		snippetsStr := mapData["snippets"].(string)
+		snippetsObj := p.parseSnippets(snippetsStr)
+		snippetsData = &snippetsObj
+	}
+
+	var extensionsData *[]models.ProfilePackExtension
+	if mapData["extensions"] != nil {
+		extensionsStr := mapData["extensions"].(string)
+		extensionsObj := p.parseExtensions(extensionsStr)
+		extensionsData = &extensionsObj
+	}
+
+	var globalStateData *models.ProfilePackGlobalState
+	if mapData["globalState"] != nil {
+		globalStateStr := mapData["globalState"].(string)
+		globalStateObj := p.parseGlobalState(globalStateStr)
+		globalStateData = &globalStateObj
 	}
 
 	return &models.ProfilePack{
 		Name:        mapData["name"].(string),
 		Icon:        icon,
-		Settings:    p.parseSettings(mapData["settings"].(string)),
-		Keybindings: p.parseKeybindings(mapData["keybindings"].(string)),
-		Snippets:    p.parseSnippets(mapData["snippets"].(string)),
-		Extensions:  p.parseExtensions(mapData["extensions"].(string)),
-		GlobalState: p.parseGlobalState(mapData["globalState"].(string)),
+		Settings:    settingsData,
+		Keybindings: keybindingsData,
+		Snippets:    snippetsData,
+		Extensions:  extensionsData,
+		GlobalState: globalStateData,
 	}
 }
 
@@ -67,74 +102,115 @@ func (p *ProfilePackParser) ParseFolder(path string) *models.ProfilePack {
 	profileName := profileData["name"].(string)
 
 	// Settings
-	settingsStr, err := os.ReadFile(filepath.Join(path, "settings.jsonc"))
-	if err != nil {
-		panic(err)
-	}
-	var settingsData = map[string]any{}
-	settingsData["settings"] = string(settingsStr)
-	settingsStr, err = json.Marshal(settingsData)
-	if err != nil {
-		panic(err)
-	}
+	settings := func() *models.ProfilePackSettings {
+		settingsStr, err := os.ReadFile(filepath.Join(path, "settings.jsonc"))
+		if err != nil {
+			if os.IsNotExist(err) {
+				return nil
+			}
+			panic(err)
+		}
 
-	// Keybindings
-	keybindingsStr, err := os.ReadFile(filepath.Join(path, "keybindings.jsonc"))
-	if err != nil {
-		panic(err)
-	}
-	var keybindingsData = map[string]any{}
-	keybindingsData["keybindings"] = string(keybindingsStr)
-	keybindingsStr, err = json.Marshal(keybindingsData)
-	if err != nil {
-		panic(err)
-	}
-
-	// Snippets
-	snippetsData := map[string]any{}
-	snippetFiles, err := os.ReadDir(filepath.Join(path, "snippets"))
-	if err != nil {
-		panic(err)
-	}
-
-	for _, snippetFile := range snippetFiles {
-		snippetContent, err := os.ReadFile(filepath.Join(path, "snippets", snippetFile.Name()))
+		var settingsData = map[string]any{}
+		settingsData["settings"] = string(settingsStr)
+		settingsStr, err = json.Marshal(settingsData)
 		if err != nil {
 			panic(err)
 		}
 
-		snippetFileName := snippetFile.Name()
-		snippetFileJson := snippetFileName[:len(snippetFileName)-1]
-		snippetsData[snippetFileJson] = string(snippetContent)
-	}
+		settings := p.parseSettings(string(settingsStr))
+		return &settings
+	}()
 
-	var snippetsContainer = map[string]any{}
-	snippetsContainer["snippets"] = snippetsData
-	snippetsDataStr, err := json.Marshal(snippetsContainer)
-	if err != nil {
-		panic(err)
-	}
+	// Keybindings
+	keybindings := func() *models.ProfilePackKeybindings {
+		keybindingsStr, err := os.ReadFile(filepath.Join(path, "keybindings.jsonc"))
+		if err != nil {
+			if os.IsNotExist(err) {
+				return nil
+			}
+			panic(err)
+		}
+		var keybindingsData = map[string]any{}
+		keybindingsData["keybindings"] = string(keybindingsStr)
+		keybindingsStr, err = json.Marshal(keybindingsData)
+		if err != nil {
+			panic(err)
+		}
+
+		keybindings := p.parseKeybindings(string(keybindingsStr))
+		return &keybindings
+	}()
+
+	// Snippets
+	snippets := func() *map[string]models.ProfilePackSnippets {
+		snippetsData := map[string]any{}
+		snippetFiles, err := os.ReadDir(filepath.Join(path, "snippets"))
+		if err != nil {
+			if os.IsNotExist(err) {
+				return nil
+			}
+			panic(err)
+		}
+
+		for _, snippetFile := range snippetFiles {
+			snippetContent, err := os.ReadFile(filepath.Join(path, "snippets", snippetFile.Name()))
+			if err != nil {
+				panic(err)
+			}
+
+			snippetFileName := snippetFile.Name()
+			snippetFileJson := snippetFileName[:len(snippetFileName)-1]
+			snippetsData[snippetFileJson] = string(snippetContent)
+		}
+
+		var snippetsContainer = map[string]any{}
+		snippetsContainer["snippets"] = snippetsData
+		snippetsDataStr, err := json.Marshal(snippetsContainer)
+		if err != nil {
+			panic(err)
+		}
+
+		snippets := p.parseSnippets(string(snippetsDataStr))
+		return &snippets
+	}()
 
 	// Extensions
-	extensionsStr, err := os.ReadFile(filepath.Join(path, "extensions.jsonc"))
-	if err != nil {
-		panic(err)
-	}
+	extensions := func() *[]models.ProfilePackExtension {
+		extensionsStr, err := os.ReadFile(filepath.Join(path, "extensions.jsonc"))
+		if err != nil {
+			if os.IsNotExist(err) {
+				return nil
+			}
+			panic(err)
+		}
+
+		extensions := p.parseExtensions(string(extensionsStr))
+		return &extensions
+	}()
 
 	// Global state
-	globalStateStr, err := os.ReadFile(filepath.Join(path, "globalState.jsonc"))
-	if err != nil {
-		panic(err)
-	}
+	globalState := func() *models.ProfilePackGlobalState {
+		globalStateStr, err := os.ReadFile(filepath.Join(path, "globalState.jsonc"))
+		if err != nil {
+			if os.IsNotExist(err) {
+				return nil
+			}
+			panic(err)
+		}
+
+		globalState := p.parseGlobalState(string(globalStateStr))
+		return &globalState
+	}()
 
 	return &models.ProfilePack{
 		Name:        profileName,
 		Icon:        profileIcon,
-		Settings:    p.parseSettings(string(settingsStr)),
-		Keybindings: p.parseKeybindings(string(keybindingsStr)),
-		Snippets:    p.parseSnippets(string(snippetsDataStr)),
-		Extensions:  p.parseExtensions(string(extensionsStr)),
-		GlobalState: p.parseGlobalState(string(globalStateStr)),
+		Settings:    settings,
+		Keybindings: keybindings,
+		Snippets:    snippets,
+		Extensions:  extensions,
+		GlobalState: globalState,
 	}
 }
 
