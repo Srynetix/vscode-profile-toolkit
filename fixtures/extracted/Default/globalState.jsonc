@@ -1,0 +1,14 @@
+{
+	"storage": {
+		"Comments.hidden": "[{\"id\":\"workbench.panel.comments\",\"isHidden\":false}]",
+		"extensionTips/promptedExecutableTips": "{\"docker\":[\"ms-azuretools.vscode-docker\"]}",
+		"extensionsAssistant/languagePackSuggestionIgnore": "[\"en\",\"fr\"]",
+		"hasNotifiedOfSettingsAutosave": "true",
+		"tabs-list-width-horizontal": "46",
+		"workbench.activityBar.hidden": "false",
+		"workbench.activityBar.location": "default",
+		"workbench.panel.alignment": "center",
+		"workbench.sideBar.position": "1",
+		"workbench.telemetryOptOutShown": "true"
+	}
+}
